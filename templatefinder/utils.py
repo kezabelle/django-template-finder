@@ -23,7 +23,10 @@ except ImportError:
     class Engine(object):
         @staticmethod
         def get_default():
-            return None
+            return Engine()
+        @property
+        def loaders(self):
+            return settings.TEMPLATE_LOADERS
 
 
 __all__ = ('find_all_templates', 'flatten_template_loaders', 'template_choices')
@@ -42,7 +45,8 @@ def find_all_templates(pattern='*.html'):
     .. important:: At the moment egg loader is not supported.
     """
     templates = []
-    template_loaders = flatten_template_loaders(settings.TEMPLATE_LOADERS)
+    engine = Engine.get_default()
+    template_loaders = flatten_template_loaders(engine.loaders)
     for loader_name in template_loaders:
         module, klass = loader_name.rsplit('.', 1)
         if loader_name in (
@@ -51,9 +55,15 @@ def find_all_templates(pattern='*.html'):
         ):
             loader_class = getattr(import_module(module), klass)
             if getattr(loader_class, '_accepts_engine_in_init', False):
-                loader = loader_class(Engine.get_default())
+                loader = loader_class(engine)
             else:
-                loader = loader_class()
+                try:
+                    loader = loader_class()
+                except TypeError:
+                    # probably Django which is modern enough to require
+                    # engine being passed to the init, but has since removed
+                    # _accepts_engine_in_init
+                    loader = loader_class(engine)
             for directory in loader.get_template_sources(''):
                 # In 1.9, Origin is always set.
                 # https://docs.djangoproject.com/en/1.9/releases/1.9/#template-loaderorigin-and-stringorigin-are-removed

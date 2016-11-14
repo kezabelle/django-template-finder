@@ -1,5 +1,8 @@
 from django.conf import settings
-from django.utils import unittest
+try:
+    from django.utils import unittest
+except ImportError:
+    import unittest
 
 from . import find_all_templates, flatten_template_loaders, template_choices
 
