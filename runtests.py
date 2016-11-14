@@ -8,6 +8,9 @@ from templatefinder import tests
 
 
 def main():
+    template_dirs = (
+        os.path.join(os.path.dirname(__file__), 'templatefinder', 'test_project', 'templates'),
+    )
     settings.configure(
         DATABASES={
             'default': {
@@ -17,9 +20,16 @@ def main():
         INSTALLED_APPS=(
             'templatefinder.test_project.testapp',
         ),
-        TEMPLATE_DIRS=(
-            os.path.join(os.path.dirname(__file__), 'templatefinder', 'test_project', 'templates'),
-        )
+        TEMPLATE_DIRS=template_dirs,
+        TEMPLATES=[{
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': template_dirs,
+            'APP_DIRS': True,
+            'OPTIONS': {
+                'context_processors': [
+                ],
+            },
+        }]
     )
     if hasattr(django, 'setup'):
         django.setup()
