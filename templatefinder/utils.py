@@ -54,11 +54,15 @@ def find_all_templates(pattern='*.html'):
                 loader = loader_class(Engine.get_default())
             else:
                 loader = loader_class()
-            for dir in loader.get_template_sources(''):
-                for root, dirnames, filenames in os.walk(dir):
+            for directory in loader.get_template_sources(''):
+                # In 1.9, Origin is always set.
+                # https://docs.djangoproject.com/en/1.9/releases/1.9/#template-loaderorigin-and-stringorigin-are-removed
+                if hasattr(directory, 'loader_name'):
+                    directory = directory.name
+                for root, dirnames, filenames in os.walk(directory):
                     for basename in filenames:
                         filename = os.path.join(root, basename)
-                        rel_filename = filename[len(dir)+1:]
+                        rel_filename = filename[len(directory)+1:]
                         if fnmatch.fnmatch(filename, pattern) or \
                            fnmatch.fnmatch(basename, pattern) or \
                            fnmatch.fnmatch(rel_filename, pattern):
