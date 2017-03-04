@@ -2,6 +2,7 @@ from django.conf import settings
 try:
     from django.utils import unittest
 except ImportError:
+    # Django removed its unittest vendoring in 1.9
     import unittest
 
 from . import find_all_templates, flatten_template_loaders, template_choices
