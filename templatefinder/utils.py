@@ -54,16 +54,15 @@ def find_all_templates(pattern='*.html'):
             'django.template.loaders.filesystem.Loader',
         ):
             loader_class = getattr(import_module(module), klass)
-            if getattr(loader_class, '_accepts_engine_in_init', False):
+            try:
+                # Between 1.8 and 1.10, its possible to check
+                # _accepts_engine_in_init to see if it accepts one, but the
+                # normal suite of loaders we likely care about all want one.
                 loader = loader_class(engine)
-            else:
-                try:
-                    loader = loader_class()
-                except TypeError:
-                    # probably Django which is modern enough to require
-                    # engine being passed to the init, but has since removed
-                    # _accepts_engine_in_init
-                    loader = loader_class(engine)
+            except TypeError:
+                # Prior to the template refactor in 1.8, loaders never
+                # accepted an engine.
+                loader = loader_class()
             for directory in loader.get_template_sources(''):
                 # In 1.9, Origin is always set.
                 # https://docs.djangoproject.com/en/1.9/releases/1.9/#template-loaderorigin-and-stringorigin-are-removed
